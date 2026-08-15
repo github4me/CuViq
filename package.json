@@ -38,6 +38,7 @@
     "test:watch": "vitest",
     "test:fixtures": "node scripts/generate-fixtures.mjs",
     "test:e2e": "npm run test:fixtures && playwright test",
+    "preview": "npm run test:fixtures && npm run build && vite --open /preview.html",
     "build:lib": "vite build",
     "build:browser": "vite build --config vite.browser.config.ts",
     "build:types": "tsc -p tsconfig.build.json",
