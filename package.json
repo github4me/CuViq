@@ -1,0 +1,64 @@
+{
+  "name": "cuviq-viewer",
+  "version": "0.1.0",
+  "description": "A lightweight, framework-independent Three.js product viewer Web Component.",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": [
+    "./dist/auto.js",
+    "./dist/browser/cuviq.js"
+  ],
+  "files": [
+    "dist",
+    "README.md",
+    "API.md",
+    "MODEL_DELIVERY.md",
+    "CHANGELOG.md",
+    "THIRD_PARTY_NOTICES.md",
+    "LICENSE"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./auto": {
+      "types": "./dist/auto.d.ts",
+      "import": "./dist/auto.js"
+    },
+    "./browser": "./dist/browser/cuviq.js"
+  },
+  "scripts": {
+    "clean": "node scripts/clean.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:fixtures": "node scripts/generate-fixtures.mjs",
+    "test:e2e": "npm run test:fixtures && playwright test",
+    "build:lib": "vite build",
+    "build:browser": "vite build --config vite.browser.config.ts",
+    "build:types": "tsc -p tsconfig.build.json",
+    "build": "npm run clean && npm run build:lib && npm run build:browser && npm run build:types",
+    "check:bundle": "node scripts/check-bundle.mjs",
+    "check:ssr": "node scripts/check-ssr.mjs",
+    "check": "npm run typecheck && npm test && npm run build && npm run check:bundle && npm run check:ssr && npm run test:e2e"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "three": "0.185.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1",
+    "@types/node": "22.15.3",
+    "@types/three": "0.185.4",
+    "jsdom": "26.1.0",
+    "typescript": "5.8.3",
+    "vite": "6.4.3",
+    "vitest": "3.2.7"
+  }
+}

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CuViq plain HTML example</title>
+    <style>
+      :root { color-scheme: light; font-family: system-ui, sans-serif; background: #eef1f3; }
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; }
+      main { width: min(82vw, 620px); }
+      h1 { font-size: 1rem; font-weight: 600; letter-spacing: 0.04em; color: #263238; }
+    </style>
+    <script type="module" src="/dist/browser/cuviq.js"></script>
+  </head>
+  <body>
+    <main>
+      <h1>CuViq product inspection</h1>
+      <cuviq-viewer
+        src="/tests/fixtures/cube.glb"
+        alt="Blue metallic cube product model"
+        loading="eager"
+      ></cuviq-viewer>
+    </main>
+  </body>
+</html>
