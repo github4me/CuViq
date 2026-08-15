@@ -1,5 +1,15 @@
 import { expect, test } from "@playwright/test";
 
+test("opens the root preview without a Vite error overlay", async ({ page }) => {
+  const browserErrors: string[] = [];
+  page.on("pageerror", (error) => browserErrors.push(error.message));
+  await page.goto("/preview.html");
+  await expect(page.locator("cuviq-viewer")).toHaveAttribute("data-state", "ready");
+  await expect(page.locator("#message")).toContainText("sample cube.glb");
+  await expect(page.locator("vite-error-overlay")).toHaveCount(0);
+  expect(browserErrors).toEqual([]);
+});
+
 test("loads a GLB in plain HTML and exposes only the canvas", async ({ page }) => {
   await page.goto("/examples/html/");
   const viewer = page.locator("cuviq-viewer");
