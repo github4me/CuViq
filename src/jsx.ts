@@ -5,6 +5,8 @@ type CuviqJsxAttributes = {
   poster?: string;
   loading?: "lazy" | "eager";
   alt?: string;
+  width?: number;
+  height?: number;
   "aria-label"?: string;
   class?: string;
   className?: string;

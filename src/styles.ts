@@ -5,7 +5,8 @@ export const VIEWER_STYLES = `
   --cuviq-border-color: #d8dee2;
   display: block;
   position: relative;
-  width: 100%;
+  width: var(--cuviq-attribute-width, 100%);
+  height: var(--cuviq-attribute-height, auto);
   aspect-ratio: 1 / 1;
   min-width: 0;
   contain: layout paint style;

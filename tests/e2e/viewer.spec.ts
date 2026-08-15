@@ -167,6 +167,22 @@ test("keeps the default viewport square across the supported width range", async
   }
 });
 
+test("honors explicit width and height attributes", async ({ page }) => {
+  await page.goto("/examples/html/");
+  const viewer = page.locator("cuviq-viewer");
+  await expect(viewer).toHaveAttribute("data-state", "ready");
+  await viewer.evaluate((element) => {
+    element.removeAttribute("style");
+    element.setAttribute("width", "520");
+    element.setAttribute("height", "320");
+  });
+  await expect.poll(async () => viewer.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return [Math.round(rect.width), Math.round(rect.height)];
+  })).toEqual([520, 320]);
+  await expect(viewer).toHaveAttribute("data-state", "ready");
+});
+
 test("supports multiple instances and cleans canvases on disconnect", async ({ page }) => {
   await page.goto("/examples/html/");
   const result = await page.evaluate(async () => {

@@ -6,6 +6,8 @@ export function ProductModel() {
       src="/models/product.glb"
       poster="/images/product.webp"
       alt="Product 3D model"
+      width={640}
+      height={480}
     />
   );
 }

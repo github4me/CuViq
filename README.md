@@ -38,6 +38,8 @@ Serve the standalone browser entry from your own origin or package CDN. It conta
   src="/models/product.glb"
   poster="/images/product.webp"
   alt="Product 3D model"
+  width="640"
+  height="480"
 ></cuviq-viewer>
 ```
 
@@ -60,6 +62,8 @@ The default V1 entry does not ship Draco, KTX2/Basis, or Meshopt decoders. Asset
 ## Styling
 
 The host is `display: block`, `width: 100%`, and square by default. Normal CSS can override its dimensions.
+
+Optional numeric `width` and `height` attributes set explicit CSS-pixel dimensions. If both are omitted, the responsive square default remains unchanged.
 
 ```css
 cuviq-viewer {

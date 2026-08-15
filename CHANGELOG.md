@@ -1,5 +1,9 @@
 # Release notes
 
+## Unreleased
+
+- Added optional numeric `width` and `height` attributes and properties while preserving the responsive square default.
+
 ## 0.1.0 — 2026-08-15
 
 - Added the `<cuviq-viewer>` Web Component using a direct Three.js runtime.

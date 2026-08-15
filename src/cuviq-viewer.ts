@@ -14,7 +14,7 @@ const HTMLElementBase: typeof HTMLElement = typeof HTMLElement === "undefined"
   : HTMLElement;
 
 export class CuviqViewerElement extends HTMLElementBase {
-  static readonly observedAttributes = ["src", "poster", "loading", "alt", "aria-label"];
+  static readonly observedAttributes = ["src", "poster", "loading", "alt", "aria-label", "width", "height"];
 
   private readonly canvasHost: HTMLDivElement;
   private readonly posterElement: HTMLImageElement;
@@ -87,6 +87,22 @@ export class CuviqViewerElement extends HTMLElementBase {
     else this.removeAttribute("alt");
   }
 
+  get width(): number | null {
+    return this.parseDimension(this.getAttribute("width"));
+  }
+
+  set width(value: number | null) {
+    this.setDimensionAttribute("width", value);
+  }
+
+  get height(): number | null {
+    return this.parseDimension(this.getAttribute("height"));
+  }
+
+  set height(value: number | null) {
+    this.setDimensionAttribute("height", value);
+  }
+
   connectedCallback(): void {
     if (this.connected) return;
     this.connected = true;
@@ -115,6 +131,10 @@ export class CuviqViewerElement extends HTMLElementBase {
     }
     if (name === "alt" || name === "aria-label") {
       this.syncAccessibleName();
+      return;
+    }
+    if (name === "width" || name === "height") {
+      this.syncDimension(name);
       return;
     }
     if (name === "loading" && this.connected) {
@@ -227,6 +247,30 @@ export class CuviqViewerElement extends HTMLElementBase {
       this.generatedAriaLabel = undefined;
       this.removeAttribute("aria-label");
     }
+  }
+
+  private parseDimension(value: string | null): number | null {
+    if (value === null || value.trim() === "") return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  }
+
+  private setDimensionAttribute(name: "width" | "height", value: number | null): void {
+    if (value === null) {
+      this.removeAttribute(name);
+      return;
+    }
+    if (!Number.isFinite(value) || value <= 0) {
+      throw new RangeError(`CuViq ${name} must be a positive finite number.`);
+    }
+    this.setAttribute(name, String(value));
+  }
+
+  private syncDimension(name: "width" | "height"): void {
+    const value = this.parseDimension(this.getAttribute(name));
+    const property = `--cuviq-attribute-${name}`;
+    if (value === null) this.style.removeProperty(property);
+    else this.style.setProperty(property, `${value}px`);
   }
 
   private dispatchError(detail: CuviqErrorDetail): void {

@@ -11,6 +11,10 @@
 | `loading` | `lazy`, `eager` | `lazy` | Whether initialization waits until the viewer approaches the viewport. |
 | `alt` | string | none | Accessible model description and fallback accessible name. |
 | `aria-label` | string | none | Explicit accessible name; takes precedence over `alt`. |
+| `width` | positive number | responsive | Viewport width in CSS pixels. |
+| `height` | positive number | automatic square | Viewport height in CSS pixels. |
+
+When `width` and `height` are omitted, the host remains responsive at `width: 100%` with a `1 / 1` aspect ratio. Supplying both creates an explicit rectangular viewport. Supplying only `width` retains the default square aspect ratio. Normal page CSS can still override host dimensions.
 
 ## Method
 
