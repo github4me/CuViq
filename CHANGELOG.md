@@ -3,6 +3,8 @@
 ## Unreleased
 
 - Added optional numeric `width` and `height` attributes and properties while preserving the responsive square default.
+- Added React 19 typings plus React, Angular, and Vue integration samples.
+- Added the packaged brass ferrule GLB sample and absolute-URL loading coverage.
 
 ## 0.1.0 — 2026-08-15
 

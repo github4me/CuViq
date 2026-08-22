@@ -5,7 +5,7 @@ test("opens the root preview without a Vite error overlay", async ({ page }) => 
   page.on("pageerror", (error) => browserErrors.push(error.message));
   await page.goto("/preview.html");
   await expect(page.locator("cuviq-viewer")).toHaveAttribute("data-state", "ready");
-  await expect(page.locator("#message")).toContainText("sample cube.glb");
+  await expect(page.locator("#message")).toContainText("brass ferrule sample");
   await expect(page.locator("vite-error-overlay")).toHaveCount(0);
   expect(browserErrors).toEqual([]);
 });
@@ -16,7 +16,20 @@ test("loads a GLB in plain HTML and exposes only the canvas", async ({ page }) =
   await expect(viewer).toHaveAttribute("data-state", "ready");
   await expect(viewer.locator("canvas")).toHaveCount(1);
   await expect(viewer.locator("button, input, [role=button]")).toHaveCount(0);
-  await expect(viewer).toHaveAttribute("aria-label", "Blue metallic cube product model");
+  await expect(viewer).toHaveAttribute("aria-label", "Brass ferrule block, 10.8 millimetres");
+});
+
+test("loads a GLB from an absolute URL", async ({ page }) => {
+  await page.goto("/examples/html/");
+  const source = await page.locator("cuviq-viewer").evaluate(async (viewer) => {
+    const absoluteUrl = new URL("/examples/models/brass-ferrule-block.glb", window.location.href).href;
+    const ready = new Promise<string>((resolve) => viewer.addEventListener("cuviq-ready", (event) => {
+      resolve((event as CustomEvent<{ source: string }>).detail.source);
+    }, { once: true }));
+    viewer.setAttribute("src", absoluteUrl);
+    return ready;
+  });
+  expect(source).toBe(new URL("/examples/models/brass-ferrule-block.glb", page.url()).href);
 });
 
 test("loads a hosted GLTF with an external buffer", async ({ page }) => {

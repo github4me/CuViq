@@ -8,6 +8,8 @@ CuViq is a framework-independent Web Component for inspecting a product model in
 npm install cuviq-viewer
 ```
 
+The published package includes a small sample model at `cuviq-viewer/examples/models/brass-ferrule-block.glb` for local experimentation.
+
 ## Framework integrations
 
 CuViq is a native custom element rather than a framework wrapper. Import `cuviq-viewer/auto` once in browser code to register `<cuviq-viewer>`. It has no React, Angular, or Vue runtime dependency.
@@ -165,6 +167,19 @@ Serve the standalone browser entry from your own origin or package CDN. It conta
 - Hosted GLTF `.bin` and texture references resolve relative to the GLTF URL. Every cross-origin resource must return suitable CORS headers.
 
 The default V1 entry does not ship Draco, KTX2/Basis, or Meshopt decoders. Assets that require them produce `DECODER_REQUIRED`. See [MODEL_DELIVERY.md](MODEL_DELIVERY.md) for delivery budgets and server requirements.
+
+### Loading from a URL
+
+Set `src` to either an absolute HTTP(S) URL or a URL relative to the current page:
+
+```html
+<cuviq-viewer
+  src="https://cdn.example.com/models/product.glb"
+  alt="Interactive 3D product model"
+></cuviq-viewer>
+```
+
+The model host must allow the page's origin with CORS response headers. Hosted GLTF buffer and texture URLs are resolved relative to the GLTF document URL.
 
 ## Interaction and rendering
 

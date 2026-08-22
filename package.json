@@ -25,6 +25,7 @@
   "files": [
     "dist",
     "examples/angular",
+    "examples/models",
     "examples/react",
     "examples/vue",
     "docs",
