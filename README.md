@@ -229,3 +229,5 @@ npm run check
 ```
 
 `npm run check` runs TypeScript, unit tests, production/library/browser builds, bundle budgets, SSR import validation, and browser E2E tests.
+
+To manually test the published browser bundle against the included sample model, run `npm run preview` and open `/preview-npm.html`. This page loads `cuviq-viewer@0.1.0` from npm through unpkg rather than from the local `dist` folder.
