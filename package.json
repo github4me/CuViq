@@ -1,5 +1,5 @@
 {
-  "name": "cuviq",
+  "name": "cuviq-viewer",
   "version": "0.1.0",
   "description": "A lightweight, framework-independent Three.js product viewer Web Component.",
   "type": "module",

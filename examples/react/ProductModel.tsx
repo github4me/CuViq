@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
-import "cuviq/auto";
-import type {} from "cuviq/react";
-import type { CuviqReadyDetail, CuviqViewerElement } from "cuviq";
+import "cuviq-viewer/auto";
+import type {} from "cuviq-viewer/react";
+import type { CuviqReadyDetail, CuviqViewerElement } from "cuviq-viewer";
 
 export function ProductModel() {
   const viewer = useRef<CuviqViewerElement>(null);

@@ -40,7 +40,7 @@ Loading, automatic framing, a poster, errors, accessibility, WebGL recovery, and
 | Item | Required name |
 | --- | --- |
 | Product brand | `CuViq` |
-| Working package name | `cuviq` |
+| Working package name | `cuviq-viewer` |
 | Custom element | `<cuviq-viewer>` |
 | Element class | `CuviqViewerElement` |
 | Ready event | `cuviq-ready` |
@@ -203,7 +203,7 @@ The NPM package may resolve `three` as a normal runtime dependency. The standalo
 ### 5.2 React usage
 
 ```tsx
-import "cuviq/auto";
+import "cuviq-viewer/auto";
 
 export function ProductModel() {
   return (

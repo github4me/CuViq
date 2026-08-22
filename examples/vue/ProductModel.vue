@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import "cuviq/auto";
-import type { CuviqErrorDetail, CuviqReadyDetail } from "cuviq";
+import "cuviq-viewer/auto";
+import type { CuviqErrorDetail, CuviqReadyDetail } from "cuviq-viewer";
 
 function onReady(event: Event): void {
   const { source } = (event as CustomEvent<CuviqReadyDetail>).detail;

@@ -1,6 +1,6 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
-import "cuviq/auto";
-import type { CuviqErrorDetail, CuviqReadyDetail } from "cuviq";
+import "cuviq-viewer/auto";
+import type { CuviqErrorDetail, CuviqReadyDetail } from "cuviq-viewer";
 
 @Component({
   selector: "app-product-model",
