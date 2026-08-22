@@ -2,17 +2,19 @@
 
 CuViq is a framework-independent Web Component for inspecting a product model in a compact square viewport. It renders GLB and hosted GLTF assets directly with Three.js and intentionally exposes only orbit rotation and bounded zoom.
 
+The npm package is `cuviq`; its custom element is `<cuviq-viewer>`.
+
 ## Install
 
 ```sh
-npm install cuviq-viewer
+npm install cuviq
 ```
 
-The published package includes a small sample model at `cuviq-viewer/examples/models/brass-ferrule-block.glb` for local experimentation.
+The published package includes a small sample model at `cuviq/examples/models/brass-ferrule-block.glb` for local experimentation.
 
 ## Framework integrations
 
-CuViq is a native custom element rather than a framework wrapper. Import `cuviq-viewer/auto` once in browser code to register `<cuviq-viewer>`. It has no React, Angular, or Vue runtime dependency.
+CuViq is a native custom element rather than a framework wrapper. Import `cuviq/auto` once in browser code to register `<cuviq-viewer>`. It has no React, Angular, or Vue runtime dependency.
 
 ### React 19+
 
@@ -20,9 +22,9 @@ Import the optional type-only entry so React's scoped JSX namespace recognizes t
 
 ```tsx
 import { useEffect, useRef } from "react";
-import "cuviq-viewer/auto";
-import type {} from "cuviq-viewer/react";
-import type { CuviqReadyDetail, CuviqViewerElement } from "cuviq-viewer";
+import "cuviq/auto";
+import type {} from "cuviq/react";
+import type { CuviqReadyDetail, CuviqViewerElement } from "cuviq";
 
 export function ProductModel() {
   const viewer = useRef<CuviqViewerElement>(null);
@@ -61,7 +63,7 @@ Add `CUSTOM_ELEMENTS_SCHEMA` to the component or NgModule that uses CuViq. Angul
 
 ```ts
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
-import "cuviq-viewer/auto";
+import "cuviq/auto";
 
 @Component({
   selector: "app-product-model",
@@ -112,7 +114,7 @@ Then use it in a component:
 
 ```vue
 <script setup lang="ts">
-import "cuviq-viewer/auto";
+import "cuviq/auto";
 
 function onReady(event: Event): void {
   console.log((event as CustomEvent).detail);
@@ -134,7 +136,7 @@ Complete samples: [`examples/vue/ProductModel.vue`](examples/vue/ProductModel.vu
 
 ### Explicit registration and SSR
 
-Use `import { CuviqViewerElement, defineCuviqViewer } from "cuviq-viewer"` when registration must be explicit. The root entry does not register the element and is safe to import during server-side rendering. Register it only in browser code.
+Use `import { CuviqViewerElement, defineCuviqViewer } from "cuviq"` when registration must be explicit. The root entry does not register the element and is safe to import during server-side rendering. Register it only in browser code.
 
 ### Plain HTML
 
@@ -155,10 +157,10 @@ Serve the standalone browser entry from your own origin or package CDN. It conta
 
 | Import | Purpose |
 | --- | --- |
-| `cuviq-viewer` | Classes, types, and explicit registration; SSR-safe |
-| `cuviq-viewer/auto` | Registers `<cuviq-viewer>` as an import side effect |
-| `cuviq-viewer/react` | Optional React 19 scoped JSX types |
-| `cuviq-viewer/browser` | Standalone browser bundle with Three.js included |
+| `cuviq` | Classes, types, and explicit registration; SSR-safe |
+| `cuviq/auto` | Registers `<cuviq-viewer>` as an import side effect |
+| `cuviq/react` | Optional React 19 scoped JSX types |
+| `cuviq/browser` | Standalone browser bundle with Three.js included |
 
 ## Supported inputs
 
