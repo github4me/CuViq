@@ -8,25 +8,131 @@ CuViq is a framework-independent Web Component for inspecting a product model in
 npm install cuviq-viewer
 ```
 
-### Bundlers and React
+## Framework integrations
 
-Import the self-registering entry once, then use the custom element. CuViq does not include or require a React runtime.
+CuViq is a native custom element rather than a framework wrapper. Import `cuviq-viewer/auto` once in browser code to register `<cuviq-viewer>`. It has no React, Angular, or Vue runtime dependency.
+
+### React 19+
+
+Import the optional type-only entry so React's scoped JSX namespace recognizes the element. A ref is the most portable way to subscribe to typed custom events.
 
 ```tsx
+import { useEffect, useRef } from "react";
 import "cuviq-viewer/auto";
+import type {} from "cuviq-viewer/react";
+import type { CuviqReadyDetail, CuviqViewerElement } from "cuviq-viewer";
 
 export function ProductModel() {
+  const viewer = useRef<CuviqViewerElement>(null);
+
+  useEffect(() => {
+    const element = viewer.current;
+    if (!element) return;
+
+    const onReady = (event: Event) => {
+      const detail = (event as CustomEvent<CuviqReadyDetail>).detail;
+      console.log("Loaded", detail.source);
+    };
+
+    element.addEventListener("cuviq-ready", onReady);
+    return () => element.removeEventListener("cuviq-ready", onReady);
+  }, []);
+
   return (
     <cuviq-viewer
+      ref={viewer}
       src="/models/product.glb"
       poster="/images/product.webp"
-      alt="Product 3D model"
+      alt="Interactive 3D product model"
+      width={640}
+      height={480}
     />
   );
 }
 ```
 
-Use `import { CuviqViewerElement, defineCuviqViewer } from "cuviq-viewer"` when registration needs to be explicit. This non-auto entry is safe to import during server-side rendering.
+Complete sample: [`examples/react/ProductModel.tsx`](examples/react/ProductModel.tsx).
+
+### Angular
+
+Add `CUSTOM_ELEMENTS_SCHEMA` to the component or NgModule that uses CuViq. Angular bindings and event listeners then work normally with the custom element.
+
+```ts
+import { Component, CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
+import "cuviq-viewer/auto";
+
+@Component({
+  selector: "app-product-model",
+  standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  template: `
+    <cuviq-viewer
+      src="/models/product.glb"
+      alt="Interactive 3D product model"
+      [width]="640"
+      [height]="480"
+      (cuviq-ready)="onReady($event)"
+    ></cuviq-viewer>
+  `,
+})
+export class ProductModelComponent {
+  onReady(event: Event): void {
+    console.log((event as CustomEvent).detail);
+  }
+}
+```
+
+Complete sample: [`examples/angular/product-model.component.ts`](examples/angular/product-model.component.ts).
+
+### Vue 3 with Vite
+
+Tell Vue's template compiler that `cuviq-viewer` is a custom element:
+
+```ts
+// vite.config.ts
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+
+export default defineConfig({
+  plugins: [
+    vue({
+      template: {
+        compilerOptions: {
+          isCustomElement: (tag) => tag === "cuviq-viewer",
+        },
+      },
+    }),
+  ],
+});
+```
+
+Then use it in a component:
+
+```vue
+<script setup lang="ts">
+import "cuviq-viewer/auto";
+
+function onReady(event: Event): void {
+  console.log((event as CustomEvent).detail);
+}
+</script>
+
+<template>
+  <cuviq-viewer
+    src="/models/product.glb"
+    alt="Interactive 3D product model"
+    :width="640"
+    :height="480"
+    @cuviq-ready="onReady"
+  />
+</template>
+```
+
+Complete samples: [`examples/vue/ProductModel.vue`](examples/vue/ProductModel.vue) and [`examples/vue/vite.config.ts`](examples/vue/vite.config.ts).
+
+### Explicit registration and SSR
+
+Use `import { CuviqViewerElement, defineCuviqViewer } from "cuviq-viewer"` when registration must be explicit. The root entry does not register the element and is safe to import during server-side rendering. Register it only in browser code.
 
 ### Plain HTML
 
@@ -42,6 +148,15 @@ Serve the standalone browser entry from your own origin or package CDN. It conta
   height="480"
 ></cuviq-viewer>
 ```
+
+## Package entries
+
+| Import | Purpose |
+| --- | --- |
+| `cuviq-viewer` | Classes, types, and explicit registration; SSR-safe |
+| `cuviq-viewer/auto` | Registers `<cuviq-viewer>` as an import side effect |
+| `cuviq-viewer/react` | Optional React 19 scoped JSX types |
+| `cuviq-viewer/browser` | Standalone browser bundle with Three.js included |
 
 ## Supported inputs
 

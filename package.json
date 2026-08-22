@@ -4,12 +4,30 @@
   "description": "A lightweight, framework-independent Three.js product viewer Web Component.",
   "type": "module",
   "license": "MIT",
+  "author": "github4me",
+  "keywords": [
+    "3d",
+    "custom-element",
+    "glb",
+    "gltf",
+    "model-viewer",
+    "three.js",
+    "web-component"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "sideEffects": [
     "./dist/auto.js",
     "./dist/browser/cuviq.js"
   ],
   "files": [
     "dist",
+    "examples/angular",
+    "examples/react",
+    "examples/vue",
+    "docs",
     "README.md",
     "API.md",
     "MODEL_DELIVERY.md",
@@ -29,6 +47,10 @@
       "types": "./dist/auto.d.ts",
       "import": "./dist/auto.js"
     },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js"
+    },
     "./browser": "./dist/browser/cuviq.js"
   },
   "scripts": {
@@ -45,7 +67,9 @@
     "build": "npm run clean && npm run build:lib && npm run build:browser && npm run build:types",
     "check:bundle": "node scripts/check-bundle.mjs",
     "check:ssr": "node scripts/check-ssr.mjs",
-    "check": "npm run typecheck && npm test && npm run build && npm run check:bundle && npm run check:ssr && npm run test:e2e"
+    "check": "npm run typecheck && npm test && npm run build && npm run check:bundle && npm run check:ssr && npm run test:e2e",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run check"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -56,6 +80,7 @@
   "devDependencies": {
     "@playwright/test": "1.62.1",
     "@types/node": "22.15.3",
+    "@types/react": "19.2.18",
     "@types/three": "0.185.4",
     "jsdom": "26.1.0",
     "typescript": "5.8.3",

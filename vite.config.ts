@@ -6,6 +6,7 @@ export default defineConfig({
       entry: {
         index: "src/index.ts",
         auto: "src/auto.ts",
+        react: "src/react.ts",
       },
       formats: ["es"],
       fileName: (_format, name) => `${name}.js`,
