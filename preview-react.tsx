@@ -1,10 +1,11 @@
 import { StrictMode, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import "./src/auto";
 import type {} from "./src/react";
 import type { CuviqErrorDetail, CuviqReadyDetail, CuviqViewerElement } from "./src/index";
 
 const SAMPLE_MODEL_URL = "/examples/models/brass-ferrule-block.glb";
+
+await customElements.whenDefined("cuviq-viewer");
 
 type ViewerStatus = {
   detail: string;
@@ -66,14 +67,14 @@ function ReactPreview() {
       <aside className="panel" aria-label="React integration status">
         <h2>Integration readout</h2>
         <p className="label">Runtime</p>
-        <p className="value">React 19 + &lt;cuviq-viewer&gt;</p>
+        <p className="value">React 19 + npm package</p>
         <div className="rule" />
         <p className="label">Element state</p>
         <p className="status" data-kind={status.kind} aria-live="polite">{status.label}</p>
         <p className="value">{status.detail}</p>
         <div className="rule" />
         <p className="label">Model</p>
-        <p className="value">brass-ferrule-block.glb</p>
+        <p className="value">cuviq-viewer@0.1.0</p>
         <button type="button" onClick={reloadModel}>Reload model</button>
       </aside>
     </main>

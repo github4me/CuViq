@@ -232,4 +232,4 @@ npm run check
 
 To manually test the published browser bundle against the included sample model, run `npm run preview` and open `/preview-npm.html`. This page loads `cuviq-viewer@0.1.0` from npm through unpkg rather than from the local `dist` folder.
 
-For a React 19 integration test, open `/preview-react.html`. It renders `<cuviq-viewer>` from a React component, shows typed custom-event status, and lets you exercise a React-driven model reload.
+For a React 19 integration test, open `/preview-react.html`. It loads the published `cuviq-viewer@0.1.0` browser bundle from npm through unpkg, renders it from a React component, shows typed custom-event status, and lets you exercise a React-driven model reload.
