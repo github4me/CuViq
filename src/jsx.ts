@@ -1,12 +1,12 @@
-import type { CuviqViewerElement } from "./cuviq-viewer";
+import type { CuviqViewerElement } from "./cuviq-viewer.js";
 
 type CuviqJsxAttributes = {
   src?: string;
   poster?: string;
   loading?: "lazy" | "eager";
   alt?: string;
-  width?: number;
-  height?: number;
+  width?: number | null | undefined;
+  height?: number | null | undefined;
   "aria-label"?: string;
   class?: string;
   className?: string;

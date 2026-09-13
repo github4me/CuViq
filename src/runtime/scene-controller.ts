@@ -9,7 +9,7 @@ import {
   WebGLRenderer,
 } from "three";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
-import { CuviqError } from "../errors";
+import { CuviqError } from "../errors.js";
 
 export interface SceneControllerCallbacks {
   onContextLost(): void;

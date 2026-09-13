@@ -1,10 +1,18 @@
 {
   "name": "cuviq-viewer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A lightweight, framework-independent Three.js product viewer Web Component.",
   "type": "module",
   "license": "MIT",
   "author": "github4me",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/github4me/CuViq.git"
+  },
+  "homepage": "https://github.com/github4me/CuViq#readme",
+  "bugs": {
+    "url": "https://github.com/github4me/CuViq/issues"
+  },
   "keywords": [
     "3d",
     "custom-element",
@@ -68,7 +76,8 @@
     "build": "npm run clean && npm run build:lib && npm run build:browser && npm run build:types",
     "check:bundle": "node scripts/check-bundle.mjs",
     "check:ssr": "node scripts/check-ssr.mjs",
-    "check": "npm run typecheck && npm test && npm run build && npm run check:bundle && npm run check:ssr && npm run test:e2e",
+    "check:package": "node scripts/check-package.mjs",
+    "check": "npm run typecheck && npm test && npm run build && npm run check:bundle && npm run check:ssr && npm run check:package && npm run test:e2e",
     "prepack": "npm run build",
     "prepublishOnly": "npm run check"
   },

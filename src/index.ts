@@ -1,7 +1,7 @@
-import "./jsx";
+import "./jsx.js";
 
-export { CuviqViewerElement } from "./cuviq-viewer";
-export { CUVIQ_VIEWER_TAG, defineCuviqViewer } from "./define";
+export { CuviqViewerElement } from "./cuviq-viewer.js";
+export { CUVIQ_VIEWER_TAG, defineCuviqViewer } from "./define.js";
 export type {
   CuviqErrorCode,
   CuviqErrorDetail,
@@ -9,4 +9,4 @@ export type {
   CuviqReadyDetail,
   CuviqSource,
   CuviqViewerState,
-} from "./types";
+} from "./types.js";

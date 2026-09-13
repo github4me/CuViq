@@ -1,7 +1,7 @@
 import { LoadingManager, Object3D } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { CuviqError, normalizeLoadError } from "../errors";
-import type { CuviqSource } from "../types";
+import { CuviqError, normalizeLoadError } from "../errors.js";
+import type { CuviqSource } from "../types.js";
 
 export interface LoadedSource {
   root: Object3D;

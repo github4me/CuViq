@@ -1,7 +1,7 @@
 import type { DetailedHTMLProps, HTMLAttributes } from "react";
 export type {} from "react/jsx-dev-runtime";
 export type {} from "react/jsx-runtime";
-import type { CuviqViewerElement } from "./cuviq-viewer";
+import type { CuviqViewerElement } from "./cuviq-viewer.js";
 
 /** React 19 JSX attributes for the CuViq custom element. */
 export type CuviqReactProps = Omit<
@@ -12,8 +12,8 @@ export type CuviqReactProps = Omit<
   poster?: string;
   loading?: "lazy" | "eager";
   alt?: string;
-  width?: number;
-  height?: number;
+  width?: number | null | undefined;
+  height?: number | null | undefined;
 };
 
 declare module "react" {

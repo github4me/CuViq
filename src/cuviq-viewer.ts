@@ -1,13 +1,13 @@
-import { SizeController } from "./platform/size-controller";
-import { VisibilityController } from "./platform/visibility-controller";
-import { ViewerRuntime } from "./runtime/viewer-runtime";
-import { VIEWER_STYLES } from "./styles";
+import { SizeController } from "./platform/size-controller.js";
+import { VisibilityController } from "./platform/visibility-controller.js";
+import { ViewerRuntime } from "./runtime/viewer-runtime.js";
+import { VIEWER_STYLES } from "./styles.js";
 import type {
   CuviqErrorDetail,
   CuviqLoading,
   CuviqSource,
   CuviqViewerState,
-} from "./types";
+} from "./types.js";
 
 const HTMLElementBase: typeof HTMLElement = typeof HTMLElement === "undefined"
   ? (class {} as unknown as typeof HTMLElement)
@@ -58,7 +58,16 @@ export class CuviqViewerElement extends HTMLElementBase {
 
   set src(value: string) {
     if (value) this.setAttribute("src", value);
-    else this.removeAttribute("src");
+    else if (this.hasAttribute("src")) this.removeAttribute("src");
+    else {
+      // load(File/Blob/URL) need not create an attribute. An empty property
+      // assignment must still clear that source when no attribute can change.
+      this.pendingSource = undefined;
+      if (this.connected) {
+        this.runtime?.clear();
+        this.setState("idle");
+      }
+    }
   }
 
   get poster(): string {
@@ -91,7 +100,7 @@ export class CuviqViewerElement extends HTMLElementBase {
     return this.parseDimension(this.getAttribute("width"));
   }
 
-  set width(value: number | null) {
+  set width(value: number | null | undefined) {
     this.setDimensionAttribute("width", value);
   }
 
@@ -99,7 +108,7 @@ export class CuviqViewerElement extends HTMLElementBase {
     return this.parseDimension(this.getAttribute("height"));
   }
 
-  set height(value: number | null) {
+  set height(value: number | null | undefined) {
     this.setDimensionAttribute("height", value);
   }
 
@@ -141,13 +150,15 @@ export class CuviqViewerElement extends HTMLElementBase {
       this.setupVisibility();
       return;
     }
-    if (name === "src" && this.connected) {
+    if (name === "src") {
+      // Frameworks can update cached elements while they are disconnected.
+      // Keep the requested source current without starting a detached runtime.
+      this.pendingSource = newValue || undefined;
+      if (!this.connected) return;
       if (!newValue) {
-        this.pendingSource = undefined;
         this.runtime?.clear();
         this.setState("idle");
       } else {
-        this.pendingSource = newValue;
         if (this.active) void this.startLoad(newValue, false);
         else this.setState("waiting", "Model will load when it is near the viewport.");
       }
@@ -156,7 +167,7 @@ export class CuviqViewerElement extends HTMLElementBase {
 
   async load(source: CuviqSource): Promise<void> {
     this.pendingSource = source;
-    this.activate();
+    this.activate(false);
     if (!this.runtime) throw new Error("CuViq could not initialize its viewer runtime.");
     await this.startLoad(source, true);
   }
@@ -174,7 +185,7 @@ export class CuviqViewerElement extends HTMLElementBase {
     if (this.loading === "eager") this.activate();
   }
 
-  private activate(): void {
+  private activate(loadPendingSource = true): void {
     if (!this.connected || this.active) return;
     this.active = true;
     try {
@@ -188,7 +199,7 @@ export class CuviqViewerElement extends HTMLElementBase {
       this.runtime.setVisible(this.visible);
       this.size = new SizeController(this, (size) => this.runtime?.resize(size));
       const source = this.pendingSource ?? this.src;
-      if (source) void this.startLoad(source, false);
+      if (loadPendingSource && source) void this.startLoad(source, false);
     } catch (error) {
       const detail: CuviqErrorDetail = {
         code: "WEBGL_UNAVAILABLE",
@@ -255,8 +266,8 @@ export class CuviqViewerElement extends HTMLElementBase {
     return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
   }
 
-  private setDimensionAttribute(name: "width" | "height", value: number | null): void {
-    if (value === null) {
+  private setDimensionAttribute(name: "width" | "height", value: number | null | undefined): void {
+    if (value === null || value === undefined) {
       this.removeAttribute(name);
       return;
     }

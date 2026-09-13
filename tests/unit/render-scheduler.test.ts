@@ -36,4 +36,19 @@ describe("RenderScheduler", () => {
     frames[0]?.(0);
     expect(after).toHaveBeenCalledTimes(1);
   });
+
+  it("removes a cancelled first-frame callback without cancelling other work", () => {
+    const frames: FrameRequestCallback[] = [];
+    const cancelled = vi.fn();
+    const retained = vi.fn();
+    const render = vi.fn().mockReturnValue(false);
+    const scheduler = new RenderScheduler(render, (callback) => (frames.push(callback), 1), vi.fn());
+    scheduler.request(cancelled);
+    scheduler.request(retained);
+    scheduler.cancelAfterFrame(cancelled);
+    frames[0]?.(0);
+    expect(render).toHaveBeenCalledOnce();
+    expect(cancelled).not.toHaveBeenCalled();
+    expect(retained).toHaveBeenCalledOnce();
+  });
 });

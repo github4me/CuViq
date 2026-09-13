@@ -1,5 +1,5 @@
 import { Box3, MathUtils, Object3D, PerspectiveCamera, Sphere, Vector3 } from "three";
-import { CuviqError } from "../errors";
+import { CuviqError } from "../errors.js";
 
 export const CAMERA_FIT_MARGIN = 1.18;
 export const MIN_POLAR_ANGLE = MathUtils.degToRad(15);

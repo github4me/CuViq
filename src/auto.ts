@@ -1,5 +1,5 @@
-import { defineCuviqViewer } from "./define";
+import { defineCuviqViewer } from "./define.js";
 
 defineCuviqViewer();
 
-export * from "./index";
+export * from "./index.js";

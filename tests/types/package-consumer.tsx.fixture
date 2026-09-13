@@ -1,0 +1,24 @@
+import { createRef } from "react";
+import { CUVIQ_VIEWER_TAG, defineCuviqViewer } from "cuviq-viewer";
+import type { CuviqViewerElement, CuviqReadyDetail, CuviqSource } from "cuviq-viewer";
+import "cuviq-viewer/auto";
+import type {} from "cuviq-viewer/react";
+
+const ref = createRef<CuviqViewerElement>();
+const numeric = <cuviq-viewer ref={ref} width={640} height={480} src="/model.glb" />;
+const cleared = <cuviq-viewer width={null} height={undefined} />;
+const otherCleared = <cuviq-viewer width={undefined} height={null} />;
+const omitted = <cuviq-viewer />;
+// @ts-expect-error dimensions are numbers, not CSS strings
+const invalid = <cuviq-viewer width="100%" />;
+
+if (ref.current) {
+  ref.current.width = undefined;
+  ref.current.height = null;
+  const width: number | null = ref.current.width;
+  const source: CuviqSource = new Blob([], { type: "model/gltf-binary" });
+  const load: Promise<void> = ref.current.load(source);
+  const detail: CuviqReadyDetail = { source };
+  void [width, load, detail];
+}
+void [numeric, cleared, otherCleared, omitted, invalid, CUVIQ_VIEWER_TAG, defineCuviqViewer];

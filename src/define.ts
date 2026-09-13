@@ -1,4 +1,4 @@
-import { CuviqViewerElement } from "./cuviq-viewer";
+import { CuviqViewerElement } from "./cuviq-viewer.js";
 
 export const CUVIQ_VIEWER_TAG = "cuviq-viewer";
 

@@ -1,5 +1,6 @@
+"use client";
+
 import { useEffect, useRef } from "react";
-import "cuviq-viewer/auto";
 import type {} from "cuviq-viewer/react";
 import type { CuviqReadyDetail, CuviqViewerElement } from "cuviq-viewer";
 
@@ -16,6 +17,13 @@ export function ProductModel() {
     };
 
     element.addEventListener("cuviq-ready", handleReady);
+
+    // Register after hydration, with listeners already attached. Do not also
+    // import /auto at module scope in an app that server-renders this element.
+    void import("cuviq-viewer/auto").catch((error: unknown) => {
+      console.error("Could not register the CuViq viewer", error);
+    });
+
     return () => element.removeEventListener("cuviq-ready", handleReady);
   }, []);
 

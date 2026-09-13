@@ -1,6 +1,6 @@
 import { MOUSE, PerspectiveCamera, TOUCH } from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { MAX_POLAR_ANGLE, MIN_POLAR_ANGLE } from "./camera-fitter";
+import { MAX_POLAR_ANGLE, MIN_POLAR_ANGLE } from "./camera-fitter.js";
 
 export class InteractionController {
   readonly controls: OrbitControls;

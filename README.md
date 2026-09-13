@@ -116,7 +116,7 @@ automatically:
     </style>
     <script
       type="module"
-      src="https://unpkg.com/cuviq-viewer@0.1.0/dist/browser/cuviq.js"
+      src="https://unpkg.com/cuviq-viewer@0.1.1/dist/browser/cuviq.js"
     ></script>
   </head>
   <body>
@@ -195,7 +195,13 @@ resolves npm package imports:
 ```
 
 `load()` resolves after the first successful frame. On failure it rejects and
-also dispatches `cuviq-error`.
+also dispatches `cuviq-error`. If a newer load, source clearing, or disconnection
+cancels it, the old promise resolves without a ready/error event. To clear an
+explicit File/Blob/URL load, assign `viewer.src = ""`; removing an already-absent
+attribute has no effect. Use
+`cuviq-ready` to confirm that a particular source actually rendered. Cancellation
+does not abort an already-started download or parse; late results are discarded
+and their resources disposed.
 
 ## How it works
 
@@ -244,8 +250,8 @@ flipping over the poles. Panning is disabled, so the product remains centered.
 | `loading` | `"lazy" \| "eager"` | `"lazy"` | Load near the viewport or initialize immediately. |
 | `alt` | `string` | none | Accessible model description and fallback accessible name. |
 | `aria-label` | `string` | none | Explicit accessible name; takes precedence over `alt`. |
-| `width` | positive number | responsive | Host width in CSS pixels. The property also accepts `null` to remove it. |
-| `height` | positive number | automatic | Host height in CSS pixels. The property also accepts `null` to remove it. |
+| `width` | positive number | responsive | Host width in CSS pixels. Set the property to `null` or `undefined` to reset it. |
+| `height` | positive number | automatic | Host height in CSS pixels. Set the property to `null` or `undefined` to reset it. |
 
 `src`, `poster`, `loading`, `alt`, `width`, and `height` have matching element
 properties. Invalid numeric values in markup are ignored; assigning a non-finite
@@ -315,7 +321,9 @@ import { defineCuviqViewer } from "cuviq-viewer";
 defineCuviqViewer();
 ```
 
-Repeated registration is safe. The package is ESM-only.
+Repeated registration is safe. The package is ESM-only. Its declarations support
+TypeScript `Bundler`, `NodeNext`, and `Node16` resolution for ESM consumers,
+including strict checks with `skipLibCheck: false`.
 
 ## Framework integrations
 
@@ -329,8 +337,9 @@ element. A ref plus native event listeners provides typed custom events and
 safe cleanup under Strict Mode.
 
 ```tsx
+"use client";
+
 import { useEffect, useRef } from "react";
-import "cuviq-viewer/auto";
 import type {} from "cuviq-viewer/react";
 import type { CuviqReadyDetail, CuviqViewerElement } from "cuviq-viewer";
 
@@ -347,6 +356,8 @@ export function ProductModel() {
     };
 
     element.addEventListener("cuviq-ready", onReady);
+    // Register after hydration, with listeners already attached.
+    void import("cuviq-viewer/auto").catch(console.error);
     return () => element.removeEventListener("cuviq-ready", onReady);
   }, []);
 
@@ -365,9 +376,17 @@ export function ProductModel() {
 
 Complete sample: [`examples/react/ProductModel.tsx`](examples/react/ProductModel.tsx).
 
-In an SSR framework such as Next.js, import `cuviq-viewer/auto` from a client
-module (for example, a module beginning with `"use client"`). The root
-`cuviq-viewer` entry itself is safe to import on the server.
+For client-only rendering, a static `import "cuviq-viewer/auto"` is also fine.
+For React SSR/hydration, use the effect-based registration above. A `"use client"`
+directive alone is not enough: do not statically import `/auto` or load the
+standalone auto-registering bundle elsewhere before hydrating the server-rendered
+viewer markup. Early registration changes the host's attributes before React
+compares them, causing hydration warnings. The root entry is safe to import on
+the server; the 3D scene is created only in the browser. React SSR is tested,
+but a complete Next.js deployment is not part of the automated test matrix.
+
+Optional `width` and `height` props can be numbers, `null`, `undefined`, or
+omitted. Removing a previously set prop restores the responsive default.
 
 ### Angular
 
@@ -453,6 +472,10 @@ function onReady(event: Event): void {
 
 Complete samples: [`examples/vue/ProductModel.vue`](examples/vue/ProductModel.vue)
 and [`examples/vue/vite.config.ts`](examples/vue/vite.config.ts).
+
+Vue `KeepAlive` reuse is supported: changes to `src` while the viewer is detached
+are applied when it reconnects. Removing `src` while detached clears the pending
+model; an explicit File/Blob load is retained unless a later source replaces it.
 
 ## Sizing and styling
 
@@ -590,6 +613,7 @@ CuViq V1 deliberately does not include:
 | --- | --- |
 | The element is unknown in React TypeScript | Add `import type {} from "cuviq-viewer/react"` in React 19 code. |
 | The element never registers | Import `cuviq-viewer/auto` once from client/browser code, or call `defineCuviqViewer()`. |
+| React warns about hydration attribute mismatches | Register in `useEffect` after hydration; remove earlier static `/auto` imports or standalone bundle scripts. See the React sample. |
 | The viewer stays in `waiting` | It is using lazy loading and is not near the viewport. Try `loading="eager"` and confirm it has visible dimensions. |
 | A model URL works locally but not after deployment | Check the deployed path, response status, MIME type, base URL, and CORS headers in browser developer tools. |
 | Hosted glTF reports `RESOURCE_MISSING` | Check every referenced `.bin` and texture URL, including filename case and CORS. |
@@ -622,7 +646,8 @@ Useful commands:
 | `npm test` | Run the unit test suite. |
 | `npm run test:e2e` | Generate fixtures and run browser E2E tests. |
 | `npm run build` | Build library ESM, standalone browser ESM, source maps, and declarations. |
-| `npm run check` | Run type checking, unit tests, all builds, bundle budgets, SSR validation, and E2E tests. |
+| `npm run check:package` | After building, pack and install an isolated npm consumer; check strict Bundler/NodeNext/Node16 types and SSR imports. Requires registry access. |
+| `npm run check` | Run type checking, unit tests, all builds, bundle budgets, packed-package checks, SSR validation, and E2E tests. |
 
 After `npm run preview`, use:
 

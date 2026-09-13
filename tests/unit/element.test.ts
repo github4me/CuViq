@@ -1,6 +1,26 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { defineCuviqViewer } from "../../src/define";
 
+const runtimeMock = vi.hoisted(() => ({
+  created: vi.fn(),
+  load: vi.fn().mockResolvedValue(undefined),
+  clear: vi.fn(),
+  dispose: vi.fn(),
+  resize: vi.fn(),
+  setVisible: vi.fn(),
+}));
+
+vi.mock("../../src/runtime/viewer-runtime", () => ({
+  ViewerRuntime: class {
+    constructor() { runtimeMock.created(); }
+    load = runtimeMock.load;
+    clear = runtimeMock.clear;
+    dispose = runtimeMock.dispose;
+    resize = runtimeMock.resize;
+    setVisible = runtimeMock.setVisible;
+  },
+}));
+
 class InactiveIntersectionObserver {
   observe(): void {}
   unobserve(): void {}
@@ -13,6 +33,7 @@ class InactiveIntersectionObserver {
 
 describe("CuviqViewerElement", () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     vi.stubGlobal("IntersectionObserver", InactiveIntersectionObserver);
     defineCuviqViewer();
   });
@@ -60,6 +81,100 @@ describe("CuviqViewerElement", () => {
     expect(viewer.style.getPropertyValue("--cuviq-attribute-width")).toBe("");
     expect(() => { viewer.width = 0; }).toThrow(RangeError);
     expect(() => { viewer.height = Number.POSITIVE_INFINITY; }).toThrow(RangeError);
+    expect(() => { viewer.width = Number.NaN; }).toThrow(RangeError);
+  });
+
+  it.each(["width", "height"] as const)("resets %s when a framework assigns null or undefined", (dimension) => {
+    const viewer = document.createElement("cuviq-viewer");
+    for (const value of [null, undefined]) {
+      viewer[dimension] = 640;
+      viewer[dimension] = value;
+      expect(viewer[dimension]).toBeNull();
+      expect(viewer.hasAttribute(dimension)).toBe(false);
+      expect(viewer.style.getPropertyValue(`--cuviq-attribute-${dimension}`)).toBe("");
+    }
+  });
+
+  it("loads an explicit source only once when activating an inactive lazy viewer", async () => {
+    const viewer = document.createElement("cuviq-viewer");
+    viewer.src = "/attribute.glb";
+    document.body.append(viewer);
+    expect(runtimeMock.created).not.toHaveBeenCalled();
+
+    const file = new File(["model"], "selected.glb");
+    await viewer.load(file);
+
+    expect(runtimeMock.created).toHaveBeenCalledTimes(1);
+    expect(runtimeMock.load).toHaveBeenCalledExactlyOnceWith(file);
+  });
+
+  it("uses the latest source after a detached cached viewer is reconnected", () => {
+    const viewer = document.createElement("cuviq-viewer");
+    viewer.loading = "eager";
+    viewer.src = "/initial.glb";
+    document.body.append(viewer);
+    viewer.src = "/previous.glb";
+    viewer.remove();
+    runtimeMock.load.mockClear();
+
+    viewer.src = "/latest.glb";
+    expect(runtimeMock.load).not.toHaveBeenCalled();
+    document.body.append(viewer);
+
+    expect(runtimeMock.load).toHaveBeenCalledExactlyOnceWith("/latest.glb");
+  });
+
+  it("does not reload a source removed while the viewer is detached", () => {
+    const viewer = document.createElement("cuviq-viewer");
+    viewer.loading = "eager";
+    viewer.src = "/initial.glb";
+    document.body.append(viewer);
+    viewer.src = "/previous.glb";
+    viewer.remove();
+    runtimeMock.load.mockClear();
+
+    viewer.removeAttribute("src");
+    document.body.append(viewer);
+
+    expect(runtimeMock.load).not.toHaveBeenCalled();
+    expect(viewer.src).toBe("");
+  });
+
+  it("preserves an explicit File source across reconnects until src changes", async () => {
+    const viewer = document.createElement("cuviq-viewer");
+    viewer.loading = "eager";
+    document.body.append(viewer);
+    const file = new File(["model"], "selected.glb");
+    await viewer.load(file);
+    viewer.remove();
+    runtimeMock.load.mockClear();
+
+    document.body.append(viewer);
+    expect(runtimeMock.load).toHaveBeenCalledExactlyOnceWith(file);
+    viewer.remove();
+    runtimeMock.load.mockClear();
+    viewer.src = "/replacement.glb";
+    document.body.append(viewer);
+    expect(runtimeMock.load).toHaveBeenCalledExactlyOnceWith("/replacement.glb");
+  });
+
+  it.each([false, true])("clears an explicit load without a src attribute (detached: %s)", async (detached) => {
+    const viewer = document.createElement("cuviq-viewer");
+    viewer.loading = "eager";
+    document.body.append(viewer);
+    await viewer.load(new File(["model"], "selected.glb"));
+    expect(viewer.hasAttribute("src")).toBe(false);
+    if (detached) viewer.remove();
+    runtimeMock.load.mockClear();
+    runtimeMock.clear.mockClear();
+
+    viewer.src = "";
+
+    expect(runtimeMock.clear).toHaveBeenCalledTimes(detached ? 0 : 1);
+    if (!detached) expect(viewer.dataset.state).toBe("idle");
+    viewer.remove();
+    document.body.append(viewer);
+    expect(runtimeMock.load).not.toHaveBeenCalled();
   });
 
   it("renders poster and accessible fallback without initializing while lazy", () => {

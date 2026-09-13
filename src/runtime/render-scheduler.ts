@@ -15,8 +15,9 @@ export class RenderScheduler {
   ) {}
 
   request(afterFrame?: FrameCallback): void {
+    if (this.disposed) return;
     if (afterFrame) this.afterFrame.add(afterFrame);
-    if (this.disposed || this.suspended || this.frameId !== undefined) return;
+    if (this.suspended || this.frameId !== undefined) return;
     this.frameId = this.requestAnimationFrameImpl(() => {
       this.frameId = undefined;
       if (this.disposed || this.suspended) return;
@@ -26,6 +27,10 @@ export class RenderScheduler {
       for (const callback of callbacks) callback();
       if (needsAnotherFrame) this.request();
     });
+  }
+
+  cancelAfterFrame(callback: FrameCallback): void {
+    this.afterFrame.delete(callback);
   }
 
   setSuspended(suspended: boolean): void {

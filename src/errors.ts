@@ -1,4 +1,4 @@
-import type { CuviqErrorCode, CuviqErrorDetail, CuviqSource } from "./types";
+import type { CuviqErrorCode, CuviqErrorDetail, CuviqSource } from "./types.js";
 
 export class CuviqError extends Error {
   readonly code: CuviqErrorCode;

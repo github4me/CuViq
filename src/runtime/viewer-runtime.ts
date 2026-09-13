@@ -1,20 +1,26 @@
 import { Object3D } from "three";
-import { CuviqError, normalizeLoadError } from "../errors";
-import type { CuviqSource, ViewerRuntimeCallbacks } from "../types";
-import type { ViewerSize } from "../platform/size-controller";
-import { fitCameraToObject } from "./camera-fitter";
-import { InteractionController } from "./interaction-controller";
-import { RenderScheduler } from "./render-scheduler";
-import { disposeObjectResources } from "./resource-disposer";
-import { SceneController } from "./scene-controller";
-import { SourceLoader } from "./source-loader";
+import { CuviqError, normalizeLoadError } from "../errors.js";
+import type { CuviqSource, ViewerRuntimeCallbacks } from "../types.js";
+import type { ViewerSize } from "../platform/size-controller.js";
+import { fitCameraToObject } from "./camera-fitter.js";
+import { InteractionController } from "./interaction-controller.js";
+import { RenderScheduler } from "./render-scheduler.js";
+import { disposeObjectResources } from "./resource-disposer.js";
+import { SceneController } from "./scene-controller.js";
+import { SourceLoader } from "./source-loader.js";
+
+interface PendingLoad {
+  resolve(): void;
+  reject(error: unknown): void;
+  afterFrame?: () => void;
+}
 
 export class ViewerRuntime {
   private readonly scene: SceneController;
   private readonly interaction: InteractionController;
   private readonly scheduler: RenderScheduler;
   private readonly loader = new SourceLoader();
-  private generation = 0;
+  private pendingLoad: PendingLoad | undefined;
   private model: Object3D | undefined;
   private currentSource: CuviqSource | undefined;
   private disposed = false;
@@ -44,44 +50,58 @@ export class ViewerRuntime {
 
   async load(source: CuviqSource): Promise<void> {
     if (this.disposed) throw new CuviqError("LOAD_FAILED", "The viewer is disconnected.", source);
-    const generation = ++this.generation;
+    this.cancelPendingLoad();
     this.currentSource = source;
     this.removeModel();
     this.callbacks.onStateChange("loading", "Loading model…");
 
+    await new Promise<void>((resolve, reject) => {
+      const pending: PendingLoad = { resolve, reject };
+      this.pendingLoad = pending;
+      void this.loadSource(source, pending).catch(reject);
+    });
+  }
+
+  private async loadSource(source: CuviqSource, pending: PendingLoad): Promise<void> {
     try {
       const loaded = await this.loader.load(source);
-      if (this.disposed || generation !== this.generation) {
+      if (this.pendingLoad !== pending) {
         disposeObjectResources(loaded.root);
         return;
       }
+      // Own parsed resources before fitting, which can reject an empty model.
+      this.model = loaded.root;
       const fit = fitCameraToObject(loaded.root, this.scene.camera, this.interaction.controls.target);
       this.interaction.controls.minDistance = fit.minDistance;
       this.interaction.controls.maxDistance = fit.maxDistance;
       this.interaction.controls.update();
       this.lastFitAspect = this.scene.camera.aspect;
       this.scene.scene.add(loaded.root);
-      this.model = loaded.root;
 
-      await new Promise<void>((resolve) => {
-        this.scheduler.request(() => {
-          if (this.disposed || generation !== this.generation) return resolve();
+      pending.afterFrame = () => {
+        if (this.pendingLoad !== pending) return;
+        this.pendingLoad = undefined;
+        try {
           this.callbacks.onStateChange("ready");
           this.callbacks.onReady({ source });
-          resolve();
-        });
-      });
+        } finally {
+          pending.resolve();
+        }
+      };
+      this.scheduler.request(pending.afterFrame);
     } catch (error) {
-      if (this.disposed || generation !== this.generation) return;
+      if (this.pendingLoad !== pending) return;
+      this.pendingLoad = undefined;
+      this.removeModel();
       const normalized = normalizeLoadError(error, source);
       this.callbacks.onStateChange("error", normalized.message);
       this.callbacks.onError(normalized.toDetail());
-      throw normalized;
+      pending.reject(normalized);
     }
   }
 
   clear(): void {
-    this.generation += 1;
+    this.cancelPendingLoad();
     this.currentSource = undefined;
     this.removeModel();
     this.callbacks.onStateChange("idle");
@@ -120,6 +140,16 @@ export class ViewerRuntime {
     this.model = undefined;
   }
 
+  private cancelPendingLoad(): void {
+    const pending = this.pendingLoad;
+    if (!pending) return;
+    this.pendingLoad = undefined;
+    if (pending.afterFrame) this.scheduler.cancelAfterFrame(pending.afterFrame);
+    // Cancellation resolves without a ready/error event, matching stale loads.
+    // The parser may still finish; loadSource disposes any late result.
+    pending.resolve();
+  }
+
   private handleContextLost(): void {
     if (this.disposed) return;
     this.scheduler.setSuspended(true);
@@ -144,7 +174,7 @@ export class ViewerRuntime {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
-    this.generation += 1;
+    this.cancelPendingLoad();
     this.removeModel();
     this.scheduler.dispose();
     this.interaction.dispose();
